@@ -148,7 +148,13 @@ class Handler(BaseHTTPRequestHandler):
   except sqlite3.IntegrityError:self.send(409,{'error':'Username already exists'})
   except ValueError as error:self.send(400,{'error':str(error) if not isinstance(error,json.JSONDecodeError) else 'Invalid JSON request'})
   except (KeyError,TypeError):self.send(400,{'error':'Check all required fields and values'})
-  except Exception:self.send(500,{'error':'Server error; please retry'})
+  except Exception as error:
+   diagnostic=str(error)
+   for name,value in os.environ.items():
+    if value and (name.startswith('CLIMA_') or any(k in name for k in ['PASSWORD','SECRET','TOKEN','KEY'])):diagnostic=diagnostic.replace(value,'[redacted]')
+   diagnostic=re.sub(r'postgres(?:ql)?://[^\s]+','[database connection]',diagnostic)
+   print('CliMa server error:',type(error).__name__,diagnostic[:1200],flush=True)
+   self.send(500,{'error':'Server error; please retry'})
 if __name__=='__main__':
  init()
  if not os.getenv('CLIMA_ADMIN_PASSWORD'):raise SystemExit('Set CLIMA_ADMIN_PASSWORD to a strong password before starting.')
