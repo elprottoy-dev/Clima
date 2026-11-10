@@ -1,0 +1,47 @@
+services:
+  app:
+    build: .
+    restart: unless-stopped
+    environment:
+      CLIMA_HOST: 0.0.0.0
+      PORT: 8080
+      CLIMA_DB: /data/clima.sqlite3
+      CLIMA_ADMIN_PASSWORD: ${CLIMA_ADMIN_PASSWORD:?Set a strong admin password}
+      CLIMA_DATA_KEY: ${CLIMA_DATA_KEY:?Set a persistent Fernet encryption key}
+      CLIMA_REQUIRE_STAFF_MFA: 1
+      CLIMA_SMTP_HOST: ${CLIMA_SMTP_HOST:-}
+      CLIMA_SMTP_PORT: ${CLIMA_SMTP_PORT:-587}
+      CLIMA_SMTP_FROM: ${CLIMA_SMTP_FROM:-}
+      CLIMA_SMTP_USER: ${CLIMA_SMTP_USER:-}
+      CLIMA_SMTP_PASSWORD: ${CLIMA_SMTP_PASSWORD:-}
+      FIREBASE_PROJECT_ID: ${FIREBASE_PROJECT_ID:-}
+      GOOGLE_APPLICATION_CREDENTIALS: /run/secrets/firebase-service-account.json
+    volumes:
+      - clima_data:/data
+      - ./secrets:/run/secrets:ro
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8080/api/health',timeout=5)"]
+      interval: 60s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    expose:
+      - 8080
+  https:
+    image: caddy:2
+    restart: unless-stopped
+    environment:
+      CLIMA_DOMAIN: ${CLIMA_DOMAIN:?Set the real domain pointing to this server}
+    ports:
+      - 80:80
+      - 443:443
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - app
+volumes:
+  clima_data:
+  caddy_data:
+  caddy_config:

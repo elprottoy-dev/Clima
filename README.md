@@ -1,2 +1,0 @@
-# Clima
-Everyday Resilient Health

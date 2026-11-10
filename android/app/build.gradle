@@ -1,0 +1,35 @@
+plugins { id 'com.android.application'; id 'com.google.gms.google-services' }
+android {
+ namespace 'bd.clima.app'
+ compileSdk 35
+ defaultConfig { applicationId 'bd.clima.app'; minSdk 26; targetSdk 35; versionCode 10; versionName '10.0' }
+}
+
+android {
+ buildFeatures { buildConfig true }
+ defaultConfig {
+  def origin = providers.gradleProperty('CLIMA_ORIGIN').orElse('').get()
+  def parsed = new URI(origin)
+  if (parsed.scheme != 'https' || !parsed.host || parsed.userInfo || parsed.query || parsed.fragment || !(parsed.path in ['', '/']) || !(parsed.port in [-1,443]) || origin.contains('example')) throw new GradleException('Supply -PCLIMA_ORIGIN=https://your-real-host')
+  buildConfigField 'String', 'CLIMA_ORIGIN', '"' + origin.replaceAll('/+$','') + '"'
+ }
+}
+dependencies { implementation platform('com.google.firebase:firebase-bom:33.7.0'); implementation 'com.google.firebase:firebase-messaging' }
+
+if (!file("google-services.json").exists()) throw new GradleException("Add your Firebase Android google-services.json to android/app before building")
+android {
+ signingConfigs {
+  release {
+   if (System.getenv('CLIMA_KEYSTORE')) {
+    storeFile file(System.getenv('CLIMA_KEYSTORE'))
+    storePassword System.getenv('CLIMA_KEYSTORE_PASSWORD')
+    keyAlias System.getenv('CLIMA_KEY_ALIAS')
+    keyPassword System.getenv('CLIMA_KEY_PASSWORD')
+   }
+  }
+ }
+ buildTypes { release { signingConfig signingConfigs.release } }
+}
+gradle.taskGraph.whenReady { graph ->
+ if (graph.allTasks.any { it.name.toLowerCase().contains('release') } && !System.getenv('CLIMA_KEYSTORE')) throw new GradleException('Configure release signing secrets; unsigned releases are blocked')
+}
