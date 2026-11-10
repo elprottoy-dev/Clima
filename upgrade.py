@@ -344,7 +344,7 @@ def purge_user(c,uid):
  c.execute('DELETE FROM push_outbox WHERE device_id IN (SELECT id FROM devices WHERE uid=?)',(uid,))
  c.execute('DELETE FROM notice_reads WHERE nid IN (SELECT id FROM notices WHERE uid=?)',(uid,))
  c.execute('DELETE FROM reads WHERE mid IN (SELECT id FROM messages WHERE uid=?)',(uid,))
- for table in ['cases','consent_events','privacy_requests','care_consent','requests','messages','notices','reads','notice_reads','devices','security','preferences','sessions','submissions','recovery_contacts','email_challenges']:
+ for table in ['registration_profiles','cases','consent_events','privacy_requests','care_consent','requests','messages','notices','reads','notice_reads','devices','security','preferences','sessions','submissions','recovery_contacts','email_challenges']:
   c.execute('DELETE FROM '+table+' WHERE uid=?',(uid,))
  c.execute("DELETE FROM admin_changes WHERE entity='users' AND record_id=?",(uid,))
  c.execute('DELETE FROM users WHERE id=?',(uid,))

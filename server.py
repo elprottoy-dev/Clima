@@ -25,6 +25,7 @@ def init():
   clinical.init(c)
   upgrade.init(c)
   import cloud_transport;cloud_transport.init(c)
+  import registration;registration.init(c)
   upgrade.encrypt_columns(c)
   c.execute('CREATE TABLE IF NOT EXISTS login_limits(key TEXT PRIMARY KEY, count INTEGER, reset REAL)')
 def pw(p,s=None):
@@ -39,7 +40,7 @@ class Handler(BaseHTTPRequestHandler):
  def handle_request(self):
   path=urllib.parse.urlparse(self.path).path
   if not path.startswith('/api/'):
-   name={'/':'index.html','/admin':'index.html','/app.js':'app.js','/style.css':'style.css','/clinical.js':'clinical.js','/upgrade.js':'upgrade.js','/sw.js':'sw.js','/draft-vault.js':'draft-vault.js','/offline.js':'offline.js','/labels.js':'labels.js','/retention.js':'retention.js','/admin-crud.js':'admin-crud.js','/cloud-transport.js':'cloud-transport.js','/seasonal.js':'seasonal.js'}.get(path)
+   name={'/':'index.html','/admin':'index.html','/app.js':'app.js','/style.css':'style.css','/clinical.js':'clinical.js','/upgrade.js':'upgrade.js','/sw.js':'sw.js','/draft-vault.js':'draft-vault.js','/offline.js':'offline.js','/labels.js':'labels.js','/retention.js':'retention.js','/admin-crud.js':'admin-crud.js','/cloud-transport.js':'cloud-transport.js','/seasonal.js':'seasonal.js','/registration.js':'registration.js','/locations.json':'locations.json'}.get(path)
    if not name:return self.send(404,{'error':'Not found'})
    b=(ROOT/'public'/name).read_bytes();self.send_response(200);self.send_header('Content-Type','text/html; charset=utf-8' if name.endswith('html') else ('text/javascript; charset=utf-8' if name.endswith('js') else 'text/css'));self.send_header('X-Content-Type-Options','nosniff');self.end_headers();self.wfile.write(b);return
   try:
@@ -60,8 +61,15 @@ class Handler(BaseHTTPRequestHandler):
     if path=='/api/recover' and self.command=='POST':
      return self.send(*upgrade.recover(c,d,self.client_address[0]))
     if path in ['/api/register','/api/login'] and self.command=='POST':
+     profile=None
+     if path.endswith('register') and 'birth_date' in d:
+      import registration
+      profile,profile_age,profile_phone=registration.validate(d);d.update(username=profile_phone,age=profile_age,city=profile['district'],name_en=d.get('name_bn',''))
      username=str(d.get('username','')).strip().lower();password=str(d.get('password',''))
      if len(password)>256:raise ValueError('Password too long')
+     phone_login=username.translate(str.maketrans('০১২৩৪৫৬৭৮৯','0123456789')).replace(' ','').replace('-','')
+     if phone_login.startswith('+88'):phone_login=phone_login[3:]
+     if re.fullmatch(r'01[3-9][0-9]{8}',phone_login):username=phone_login
      ratekey=self.client_address[0]+':'+username
      limit=c.execute('SELECT * FROM login_limits WHERE key=?',(ratekey,)).fetchone()
      if limit and limit['reset']>time.time() and limit['count']>=15:return self.send(429,{'error':'Too many attempts. Try again in 15 minutes.'})
@@ -70,10 +78,11 @@ class Handler(BaseHTTPRequestHandler):
       if c.execute('SELECT id FROM staff WHERE username=?',(username,)).fetchone():raise ValueError('Username in use')
       if username=='admin' or not re.fullmatch('[a-z0-9_]{3,40}',username) or len(password)<10:raise ValueError('Use a 3–40 character username and password of at least 10 characters')
       en=str(d.get('name_en','')).strip();bn=str(d.get('name_bn','')).strip();age=int(d.get('age',0));city=d.get('city')
-      if not en or len(en)>100 or not re.search('[A-Za-z]',en) or not re.search('[\u0980-\u09ff]',bn) or len(bn)>100 or not 1<=age<=120 or city not in CITIES:raise ValueError('Enter both names, age 1–120 and a listed district')
+      if profile is None and (not en or len(en)>100 or not re.search('[A-Za-z]',en) or not re.search('[\u0980-\u09ff]',bn) or len(bn)>100 or not 1<=age<=120 or city not in CITIES):raise ValueError('Enter both names, age 1–120 and a listed district')
       c.execute("UPDATE identity_sequence SET value=MAX(value,(SELECT COALESCE(MAX(id),0) FROM users))+1 WHERE name='users'")
       user_id=c.execute("SELECT value FROM identity_sequence WHERE name='users'").fetchone()[0]
       c.execute('INSERT INTO users(id,username,name_en,name_bn,age,city,password) VALUES(?,?,?,?,?,?,?)',(user_id,username,en,bn,age,city,pw(password)))
+      if profile:c.execute('INSERT INTO registration_profiles(uid,payload) VALUES(?,?)',(user_id,clinical.pack(profile)))
      if username=='admin' and upgrade.verify_password(c,0,password):uid=0
      else:
       u=c.execute('SELECT * FROM users WHERE username=? AND active=1',(username,)).fetchone()

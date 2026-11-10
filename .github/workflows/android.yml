@@ -47,13 +47,15 @@ jobs:
         run: sdkmanager 'platforms;android-35' 'build-tools;35.0.0'
       - name: Compile and lint release
         working-directory: android
-        run: gradle --no-daemon -PCLIMA_ORIGIN="$CLIMA_ORIGIN" :app:assembleRelease :app:lintRelease
+        run: gradle --no-daemon -PCLIMA_ORIGIN="$CLIMA_ORIGIN" :app:assembleRelease :app:bundleRelease :app:lintRelease
       - name: Verify APK signature
         run: "$ANDROID_HOME/build-tools/35.0.0/apksigner verify --verbose android/app/build/outputs/apk/release/app-release.apk"
       - uses: actions/upload-artifact@v4
         with:
-          name: CliMa-signed-apk
-          path: android/app/build/outputs/apk/release/app-release.apk
+          name: CliMa-signed-apk-and-aab
+          path: |
+            android/app/build/outputs/apk/release/app-release.apk
+            android/app/build/outputs/bundle/release/app-release.aab
           if-no-files-found: error
           retention-days: 7
       - name: Remove signing material

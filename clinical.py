@@ -267,6 +267,8 @@ def seasonal_columns(s):
  return out
 
 def export_data(c,users):
+ import registration
+ users=[{**u,**registration.export(c,u['id'])} for u in users]
  out={'Users':users,'Cases':[],'Case history':[],'Requests':[],'Messages':[],'Notifications':[],'Appointments':[],'Documents':[],'Consent history':[],'Privacy requests':[]}
  for u in users:
   for r in c.execute('SELECT * FROM cases WHERE uid=? ORDER BY id',(u['id'],)):

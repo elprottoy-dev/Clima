@@ -20,6 +20,10 @@
       "dest": "/public/index.html"
     },
     {
+      "src": "/(registration\\.js|locations\\.json)",
+      "dest": "/public/$1"
+    },
+    {
       "src": "/(seasonal\\.js|app\\.js|style\\.css|clinical\\.js|upgrade\\.js|draft-vault\\.js|offline\\.js|labels\\.js|retention\\.js|admin-crud\\.js|cloud-transport\\.js|sw\\.js)",
       "dest": "/public/$1"
     },
