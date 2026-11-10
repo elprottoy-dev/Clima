@@ -20,6 +20,10 @@
       "dest": "/public/index.html"
     },
     {
+      "src": "/data-notices.js",
+      "dest": "/public/data-notices.js"
+    },
+    {
       "src": "/(registration\\.js|locations\\.json)",
       "dest": "/public/$1"
     },

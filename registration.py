@@ -13,6 +13,8 @@ def date(v):
  try:return datetime.date.fromisoformat(v)
  except (ValueError,TypeError):raise ValueError('সঠিক তারিখ নির্বাচন করুন')
 def validate(d):
+ from input_normalization import normalize_answers
+ d=normalize_answers(d)
  name=text(d,'name_bn');phone=text(d,'phone').translate(str.maketrans('০১২৩৪৫৬৭৮৯','0123456789')).replace(' ','').replace('-','')
  if phone.startswith('+88'):phone=phone[3:]
  if not re.fullmatch(r'01[3-9][0-9]{8}',phone):raise ValueError('১১ সংখ্যার বাংলাদেশি মোবাইল নম্বর দিন')

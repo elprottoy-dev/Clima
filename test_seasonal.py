@@ -1,13 +1,14 @@
 import unittest,sqlite3,os
 from test_upgrade import UpgradeFlow
 import seasonal,server
+from input_normalization import normalize_answers
 class SeasonalFlow(UpgradeFlow):
  def test_surveys(self):
   for kind in ['climate','disaster','reproductive']:
    rows=([dict(key=k+'_'+str(i),state='observed',month='বৈশাখ',days='১০ দিন') for k in ['heat','rain','cold'] for i in range(3)] if kind=='climate' else [dict(month=m,choices=['কোনোটিই নয়'],other='') for m in seasonal.MONTHS])
    data=dict(version=1,kind=kind,basis='year',year='১৪৩৩',rows=rows)
    status,res=self.call('cases',dict(categories=['other'],description='Seasonal report',severity='unsure',consent=True,seasonal=data),self.user);self.assertEqual(status,200,res)
-   self.assertEqual(self.call('case?id='+str(res['id']),token=self.user)[1]['report']['seasonal'],data)
+   self.assertEqual(self.call('case?id='+str(res['id']),token=self.user)[1]['report']['seasonal'],normalize_answers(data))
    with (__import__('psycopg').connect(os.environ['CLIMA_TEST_POSTGRES'],sslmode='disable',options='-c search_path=clima,public') if os.getenv('CLIMA_TEST_POSTGRES') else sqlite3.connect(server.DB)) as c:self.assertNotIn('বৈশাখ',c.execute('SELECT payload FROM cases WHERE id='+str(int(res['id']))).fetchone()[0])
    other=self.register('other_'+kind);self.assertEqual(self.call('case?id='+str(res['id']),token=other)[0],403)
    data['rows'].pop();self.assertRaises(ValueError,seasonal.validate,data)

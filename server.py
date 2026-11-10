@@ -40,7 +40,7 @@ class Handler(BaseHTTPRequestHandler):
  def handle_request(self):
   path=urllib.parse.urlparse(self.path).path
   if not path.startswith('/api/'):
-   name={'/':'index.html','/admin':'index.html','/app.js':'app.js','/style.css':'style.css','/clinical.js':'clinical.js','/upgrade.js':'upgrade.js','/sw.js':'sw.js','/draft-vault.js':'draft-vault.js','/offline.js':'offline.js','/labels.js':'labels.js','/retention.js':'retention.js','/admin-crud.js':'admin-crud.js','/cloud-transport.js':'cloud-transport.js','/seasonal.js':'seasonal.js','/registration.js':'registration.js','/locations.json':'locations.json'}.get(path)
+   name={'/':'index.html','/admin':'index.html','/app.js':'app.js','/style.css':'style.css','/clinical.js':'clinical.js','/upgrade.js':'upgrade.js','/sw.js':'sw.js','/draft-vault.js':'draft-vault.js','/offline.js':'offline.js','/labels.js':'labels.js','/retention.js':'retention.js','/admin-crud.js':'admin-crud.js','/cloud-transport.js':'cloud-transport.js','/seasonal.js':'seasonal.js','/registration.js':'registration.js','/data-notices.js':'data-notices.js','/locations.json':'locations.json'}.get(path)
    if not name:return self.send(404,{'error':'Not found'})
    b=(ROOT/'public'/name).read_bytes();self.send_response(200);self.send_header('Content-Type','text/html; charset=utf-8' if name.endswith('html') else ('text/javascript; charset=utf-8' if name.endswith('js') else 'text/css'));self.send_header('X-Content-Type-Options','nosniff');self.end_headers();self.wfile.write(b);return
   try:
@@ -49,7 +49,8 @@ class Handler(BaseHTTPRequestHandler):
     if not self.headers.get('Content-Type','').startswith('application/json'):return self.send(415,{'error':'JSON required'})
     n=int(self.headers.get('Content-Length',0))
     if n<0 or n>7500000:raise ValueError('Request too large')
-    d=json.loads(self.rfile.read(n))
+    from input_normalization import normalize_answers
+    d=normalize_answers(json.loads(self.rfile.read(n)))
    with db() as c:
     if path=='/api/health' and self.command=='GET':
      heartbeat=c.execute("SELECT value FROM app_settings WHERE key='scheduler_heartbeat'").fetchone()
