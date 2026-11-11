@@ -129,7 +129,18 @@ class Handler(BaseHTTPRequestHandler):
      if priority not in ['normal','important','urgent']:raise ValueError('Invalid priority')
      rid=d.get('request_id')
      if rid and not c.execute('SELECT id FROM requests WHERE id=? AND uid=?',(int(rid),target)).fetchone():raise ValueError('Request does not match recipient')
-     c.execute('INSERT INTO messages(uid,city,title_en,title_bn,body_en,body_bn,priority,message_kind) VALUES(?,?,?,?,?,?,?,?)',(target,city,*[d[k].strip() for k in ['title_en','title_bn','body_en','body_bn']],priority,message_kind))
+     import datetime
+     now=datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=6)))
+     start=d.get('start_date') or now.date().isoformat();end=d.get('end_date') or '';at=d.get('at') or '00:00'
+     datetime.date.fromisoformat(start)
+     if end:datetime.date.fromisoformat(end)
+     if (end and end<start) or start<now.date().isoformat() or not re.fullmatch(r'([01]\d|2[0-3]):[0-5]\d',at):raise ValueError('সঠিক প্রকাশের তারিখ ও সময় দিন')
+     if start>now.date().isoformat() or at>now.strftime('%H:%M'):
+      if rid:raise ValueError('অনুরোধের উত্তর এখনই পাঠান')
+      c.execute('INSERT INTO schedules(uid,city,title_en,title_bn,body_en,body_bn,priority,message_kind,start_date,end_date,at,frequency) VALUES(?,?,?,?,?,?,?,?,?,?,?,?)',(target,city,*[d[k].strip() for k in ['title_en','title_bn','body_en','body_bn']],priority,message_kind,start,end,at,'once'))
+      clinical.audit(c,actor,'message_scheduled',start)
+      return self.send(200,{'scheduled':True})
+     c.execute('INSERT INTO messages(uid,city,title_en,title_bn,body_en,body_bn,priority,message_kind,start_date,end_date) VALUES(?,?,?,?,?,?,?,?,?,?)',(target,city,*[d[k].strip() for k in ['title_en','title_bn','body_en','body_bn']],priority,message_kind,start,end))
      if rid:c.execute("UPDATE requests SET status='answered' WHERE id=?",(int(rid),))
      clinical.notice(c,uid=target,city=city,title_en=d['title_en'].strip(),title_bn=d['title_bn'].strip(),body_en=d['body_en'].strip(),body_bn=d['body_bn'].strip(),source=message_kind)
      clinical.audit(c,actor,'advisory_sent',target or city or 'all')

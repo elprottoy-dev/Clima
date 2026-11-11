@@ -3,6 +3,24 @@ from test_upgrade import UpgradeFlow
 import seasonal,server
 from input_normalization import normalize_answers
 class SeasonalFlow(UpgradeFlow):
+ def test_scheduled_warning_permissions_and_once_delivery(self):
+  import datetime,clinical
+  day=datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=6))).date()+datetime.timedelta(days=1)
+  msg=dict(message_kind='warning',title_en='Scheduled warning',title_bn='আগাম সতর্কতা',body_en='Notice',body_bn='বার্তা',start_date=day.isoformat(),end_date=day.isoformat(),at='09:00')
+  self.assertEqual(self.call('admin/message',msg,self.user)[0],403)
+  self.assertEqual(self.call('admin/schedules',token=self.user)[0],403)
+  self.assertEqual(self.call('admin/data',token=self.user)[0],403)
+  status,result=self.call('admin/message',msg,self.admin)
+  self.assertEqual(status,200,result);self.assertTrue(result['scheduled'])
+  self.assertEqual(self.call('inbox',token=self.user)[1]['messages'],[])
+  with server.db() as c:
+   early=datetime.datetime.combine(day,datetime.time(8,59))
+   clinical.run_daily(c,early)
+   self.assertEqual(c.execute('SELECT COUNT(*) FROM messages').fetchone()[0],0)
+   due=early.replace(hour=9,minute=0)
+   clinical.run_daily(c,due);clinical.run_daily(c,due)
+   self.assertEqual(c.execute('SELECT COUNT(*) FROM messages').fetchone()[0],1)
+  self.assertEqual(self.call('inbox',token=self.user)[1]['messages'][0]['message_kind'],'warning')
  def test_surveys(self):
   for kind in ['climate','disaster','reproductive']:
    rows=([dict(key=k+'_'+str(i),state='observed',month='বৈশাখ',days='১০ দিন') for k in ['heat','rain','cold'] for i in range(3)] if kind=='climate' else [dict(month=m,choices=['কোনোটিই নয়'],other='') for m in seasonal.MONTHS])

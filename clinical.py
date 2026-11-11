@@ -63,7 +63,9 @@ def run_daily(c,now=None):
   if s['frequency']=='once' and s['start_date']!=day:continue
   cur=c.execute('INSERT OR IGNORE INTO schedule_runs VALUES(?,?)',(s['id'],day))
   if cur.rowcount:
-   notice(c,city=s['city'],title_en=s['title_en'],title_bn=s['title_bn'],body_en=s['body_en'],body_bn=s['body_bn'],source='daily')
+   notice(c,uid=s['uid'],city=s['city'],title_en=s['title_en'],title_bn=s['title_bn'],body_en=s['body_en'],body_bn=s['body_bn'],source=s['message_kind'] or 'daily')
+   if s['message_kind'] in ['warning','advisory']:
+    c.execute('INSERT INTO messages(uid,city,title_en,title_bn,body_en,body_bn,priority,message_kind,start_date,end_date) VALUES(?,?,?,?,?,?,?,?,?,?)',(s['uid'],s['city'],s['title_en'],s['title_bn'],s['body_en'],s['body_bn'],s['priority'],s['message_kind'],s['start_date'],s['end_date']))
    audit(c,'scheduler','daily_notification',s['id'])
 def start_scheduler(db):
  def loop():

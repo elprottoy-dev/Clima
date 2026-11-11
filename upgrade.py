@@ -20,7 +20,7 @@ def init(c):
  ''')
  c.execute("INSERT INTO identity_sequence(name,value) VALUES('users',(SELECT COALESCE(MAX(id),0) FROM users)) ON CONFLICT(name) DO NOTHING")
  c.execute("INSERT INTO identity_sequence(name,value) VALUES('cases',(SELECT COALESCE(MAX(id),0) FROM cases)) ON CONFLICT(name) DO NOTHING")
- for table,column,decl in [('schedules','start_date',"TEXT DEFAULT ''"),('schedules','end_date',"TEXT DEFAULT ''"),('schedules','frequency',"TEXT DEFAULT 'daily'"),('sessions','created','REAL'),('sessions','device',"TEXT DEFAULT ''")]:
+ for table,column,decl in [('schedules','uid','INTEGER'),('schedules','priority',"TEXT DEFAULT 'normal'"),('schedules','message_kind',"TEXT DEFAULT ''"),('messages','start_date',"TEXT DEFAULT ''"),('messages','end_date',"TEXT DEFAULT ''"),('schedules','start_date',"TEXT DEFAULT ''"),('schedules','end_date',"TEXT DEFAULT ''"),('schedules','frequency',"TEXT DEFAULT 'daily'"),('sessions','created','REAL'),('sessions','device',"TEXT DEFAULT ''")]:
   if column not in [r['name'] for r in c.execute('PRAGMA table_info('+table+')')]:c.execute(f'ALTER TABLE {table} ADD COLUMN {column} {decl}')
 
 def allowed(c,r,uid,role):
