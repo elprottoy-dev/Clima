@@ -29,7 +29,7 @@ class Connection:
   if urlsplit(url).port==6543:raise ValueError('Use Supabase session pooler port 5432, not transaction pooling')
   for attempt in range(3):
    try:
-    self.raw=psycopg.connect(url,connect_timeout=10,sslmode=os.getenv('CLIMA_PG_SSLMODE','verify-full'),sslrootcert=__import__('certifi').where(),prepare_threshold=None);break
+    self.raw=psycopg.connect(url,connect_timeout=10,sslmode=os.getenv('CLIMA_PG_SSLMODE','verify-full'),sslrootcert=os.path.join(os.path.dirname(__file__),'supabase-ca.crt'),prepare_threshold=None);break
    except psycopg.OperationalError:
     if attempt==2:raise
     __import__('time').sleep(0.1)
