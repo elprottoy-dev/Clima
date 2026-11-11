@@ -8,6 +8,7 @@ def run(db):
   # Transaction lock serializes due-job generation; outbox sending uses its own claim.
   if not c.execute('SELECT pg_try_advisory_xact_lock(58347910) AS locked').fetchone()['locked']:return {'busy':True}
   import cloud_transport;cloud_transport.clean(c)
+  import bulletins_nov2026;bulletins_nov2026.seed(c)
   clinical.run_daily(c);upgrade.tick(c)
   c.execute("INSERT INTO app_settings(key,value) VALUES('scheduler_heartbeat',?) ON CONFLICT(key) DO UPDATE SET value=excluded.value",(str(time.time()),))
  with db() as c:push.process(c,limit=3)
