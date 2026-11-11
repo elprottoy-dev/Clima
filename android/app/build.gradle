@@ -14,7 +14,7 @@ android {
   buildConfigField 'String', 'CLIMA_ORIGIN', '"' + origin.replaceAll('/+$','') + '"'
  }
 }
-dependencies { implementation platform('com.google.firebase:firebase-bom:33.7.0'); implementation 'com.google.firebase:firebase-messaging' }
+dependencies { implementation platform('com.google.firebase:firebase-bom:35.1.0'); implementation 'com.google.firebase:firebase-messaging' }
 
 if (!file("google-services.json").exists()) throw new GradleException("Add your Firebase Android google-services.json to android/app before building")
 android {
