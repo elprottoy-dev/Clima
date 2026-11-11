@@ -30,7 +30,7 @@ public class MainActivity extends Activity {
   if(android.os.Build.VERSION.SDK_INT>=33&&checkSelfPermission("android.permission.POST_NOTIFICATIONS")!=PackageManager.PERMISSION_GRANTED)requestPermissions(new String[]{"android.permission.POST_NOTIFICATIONS"},43);
   try { com.google.firebase.messaging.FirebaseMessaging.getInstance().getToken().addOnSuccessListener(value->{try{web.evaluateJavascript("window.dispatchEvent(new CustomEvent('clima-device-token',{detail:"+org.json.JSONObject.quote(value)+"}))",null);}catch(Exception ignored){}}); } catch(Exception ignored){}
  });}}, "CliMaDevice");
-  if(android.os.Build.VERSION.SDK_INT>=26){android.app.NotificationManager nm=getSystemService(android.app.NotificationManager.class);nm.createNotificationChannel(new android.app.NotificationChannel("clima_updates","CliMa updates",android.app.NotificationManager.IMPORTANCE_DEFAULT));}
+  if(android.os.Build.VERSION.SDK_INT>=26){android.app.NotificationManager nm=getSystemService(android.app.NotificationManager.class);nm.createNotificationChannel(new android.app.NotificationChannel("clima_updates","CliMa আপডেট",android.app.NotificationManager.IMPORTANCE_DEFAULT));}
   web.loadUrl(APP_URL);
  }
  @Override public void onRequestPermissionsResult(int code,String[] permissions,int[] results){super.onRequestPermissionsResult(code,permissions,results);if(code==42&&pending!=null){boolean granted=false;for(int r:results)if(r==PackageManager.PERMISSION_GRANTED)granted=true;pending.invoke(origin,granted,false);pending=null;}}
