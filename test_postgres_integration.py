@@ -10,7 +10,7 @@ def main():
  url=os.getenv('CLIMA_TEST_POSTGRES','')
  if urlsplit(url).hostname not in ['127.0.0.1','localhost']:raise SystemExit('Set CLIMA_TEST_POSTGRES to a disposable localhost PostgreSQL database')
  os.environ['CLIMA_DATABASE_URL']=url;os.environ['CLIMA_PG_SSLMODE']='disable'
- import psycopg,test_server,test_clinical,test_upgrade,test_cloud,test_seasonal
+ import psycopg,test_server,test_clinical,test_upgrade,test_cloud,test_seasonal,test_registration
  from cryptography.fernet import Fernet
  os.environ['CLIMA_DATA_KEY']=Fernet.generate_key().decode()
  def reset():
@@ -25,7 +25,8 @@ def main():
  def setup(self):reset();original(self)
  test_upgrade.UpgradeFlow.setUp=setup
  test_cloud.Cloud.setUp=setup
- suite=unittest.TestSuite(unittest.defaultTestLoader.loadTestsFromTestCase(cls) for cls in [test_server.Flow,test_clinical.ClinicalFlow,test_upgrade.UpgradeFlow,test_cloud.Cloud])
+ test_registration.RegistrationFlow.setUp=setup
+ suite=unittest.TestSuite(unittest.defaultTestLoader.loadTestsFromTestCase(cls) for cls in [test_server.Flow,test_clinical.ClinicalFlow,test_upgrade.UpgradeFlow,test_cloud.Cloud,test_registration.RegistrationFlow])
  suite.addTests([test_seasonal.SeasonalFlow('test_surveys'),test_seasonal.SeasonalFlow('test_messages')])
  result=unittest.TextTestRunner(verbosity=2).run(suite)
  raise SystemExit(not result.wasSuccessful())

@@ -40,9 +40,9 @@ class Handler(BaseHTTPRequestHandler):
  def handle_request(self):
   path=urllib.parse.urlparse(self.path).path
   if not path.startswith('/api/'):
-   name={'/':'index.html','/admin':'index.html','/app.js':'app.js','/style.css':'style.css','/clinical.js':'clinical.js','/upgrade.js':'upgrade.js','/sw.js':'sw.js','/draft-vault.js':'draft-vault.js','/offline.js':'offline.js','/labels.js':'labels.js','/retention.js':'retention.js','/admin-crud.js':'admin-crud.js','/cloud-transport.js':'cloud-transport.js','/seasonal.js':'seasonal.js','/registration.js':'registration.js','/data-notices.js':'data-notices.js','/locations.json':'locations.json'}.get(path)
+   name={'/':'index.html','/admin':'index.html','/logo.png':'logo.png','/date-fields.js':'date-fields.js','/app.js':'app.js','/style.css':'style.css','/clinical.js':'clinical.js','/upgrade.js':'upgrade.js','/sw.js':'sw.js','/draft-vault.js':'draft-vault.js','/offline.js':'offline.js','/labels.js':'labels.js','/retention.js':'retention.js','/admin-crud.js':'admin-crud.js','/cloud-transport.js':'cloud-transport.js','/seasonal.js':'seasonal.js','/registration.js':'registration.js','/data-notices.js':'data-notices.js','/locations.json':'locations.json'}.get(path)
    if not name:return self.send(404,{'error':'Not found'})
-   b=(ROOT/'public'/name).read_bytes();self.send_response(200);self.send_header('Content-Type','text/html; charset=utf-8' if name.endswith('html') else ('text/javascript; charset=utf-8' if name.endswith('js') else 'text/css'));self.send_header('X-Content-Type-Options','nosniff');self.end_headers();self.wfile.write(b);return
+   b=(ROOT/'public'/name).read_bytes();self.send_response(200);self.send_header('Content-Type','image/png' if name.endswith('png') else 'text/html; charset=utf-8' if name.endswith('html') else ('text/javascript; charset=utf-8' if name.endswith('js') else 'text/css'));self.send_header('X-Content-Type-Options','nosniff');self.end_headers();self.wfile.write(b);return
   try:
    d={}
    if self.command=='POST':
@@ -165,7 +165,7 @@ class Handler(BaseHTTPRequestHandler):
     if value and (name.startswith('CLIMA_') or any(k in name for k in ['PASSWORD','SECRET','TOKEN','KEY'])):diagnostic=diagnostic.replace(value,'[redacted]')
    diagnostic=re.sub(r'postgres(?:ql)?://[^\s]+','[database connection]',diagnostic)
    print('CliMa server error:',type(error).__name__,diagnostic[:1200],flush=True)
-   self.send(500,{'error':'Server error; please retry'})
+   self.send(500,{'error':'সার্ভারে সমস্যা হয়েছে। কিছুক্ষণ পর আবার চেষ্টা করুন।'})
 if __name__=='__main__':
  init()
  if not os.getenv('CLIMA_ADMIN_PASSWORD'):raise SystemExit('Set CLIMA_ADMIN_PASSWORD to a strong password before starting.')

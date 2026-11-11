@@ -6,7 +6,8 @@
       "use": "@vercel/python",
       "config": {
         "includeFiles": [
-          "supabase-ca.crt"
+          "supabase-ca.crt",
+          "public/locations.json"
         ]
       }
     },
@@ -23,6 +24,14 @@
     {
       "src": "/admin",
       "dest": "/public/index.html"
+    },
+    {
+      "src": "/logo.png",
+      "dest": "/public/logo.png"
+    },
+    {
+      "src": "/date-fields.js",
+      "dest": "/public/date-fields.js"
     },
     {
       "src": "/data-notices.js",

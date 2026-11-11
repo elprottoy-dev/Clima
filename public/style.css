@@ -43,3 +43,5 @@ input:focus,select:focus,textarea:focus{outline:3px solid #e6007e28;border-color
 @media(max-width:600px){main{padding:18px 14px 100px}.card{padding:18px}.care-story-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.care-story{padding:14px}.care-story svg{height:75px}#dashboard-climate>.grid{grid-template-columns:1fr}.grid{gap:14px}}
 @media(prefers-reduced-motion:reduce){.care-story svg{animation:none}*{scroll-behavior:auto!important}}
 .grid>*{min-width:0}.hourly-weather,.weather-week{max-width:100%;overflow-x:auto}#weather{min-width:0;max-width:100%}.care-story{min-width:0}body{overflow-wrap:anywhere}.weather-week>div{min-width:0}
+
+.date-parts{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) minmax(0,1.5fr);gap:8px;width:100%;margin-top:6px}.date-parts>span{min-width:0}.date-parts>span>span{display:block;font-size:.8rem;margin-bottom:4px}.date-parts input{width:100%;min-width:0;box-sizing:border-box}.date-parts>input[type=time]{grid-column:1/-1}a[hidden]{display:none!important}
