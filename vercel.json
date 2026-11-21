@@ -26,6 +26,10 @@
       "dest": "/public/index.html"
     },
     {
+      "src": "/dashboard-insights.js",
+      "dest": "/public/dashboard-insights.js"
+    },
+    {
       "src": "/logo.png",
       "dest": "/public/logo.png"
     },

@@ -40,7 +40,7 @@ class Handler(BaseHTTPRequestHandler):
  def handle_request(self):
   path=urllib.parse.urlparse(self.path).path
   if not path.startswith('/api/'):
-   name={'/':'index.html','/admin':'index.html','/logo.png':'logo.png','/date-fields.js':'date-fields.js','/app.js':'app.js','/style.css':'style.css','/clinical.js':'clinical.js','/upgrade.js':'upgrade.js','/sw.js':'sw.js','/draft-vault.js':'draft-vault.js','/offline.js':'offline.js','/labels.js':'labels.js','/retention.js':'retention.js','/admin-crud.js':'admin-crud.js','/cloud-transport.js':'cloud-transport.js','/seasonal.js':'seasonal.js','/registration.js':'registration.js','/data-notices.js':'data-notices.js','/locations.json':'locations.json'}.get(path)
+   name={'/':'index.html','/admin':'index.html','/logo.png':'logo.png','/date-fields.js':'date-fields.js','/app.js':'app.js','/dashboard-insights.js':'dashboard-insights.js','/style.css':'style.css','/clinical.js':'clinical.js','/upgrade.js':'upgrade.js','/sw.js':'sw.js','/draft-vault.js':'draft-vault.js','/offline.js':'offline.js','/labels.js':'labels.js','/retention.js':'retention.js','/admin-crud.js':'admin-crud.js','/cloud-transport.js':'cloud-transport.js','/seasonal.js':'seasonal.js','/registration.js':'registration.js','/data-notices.js':'data-notices.js','/locations.json':'locations.json'}.get(path)
    if not name:return self.send(404,{'error':'Not found'})
    b=(ROOT/'public'/name).read_bytes();self.send_response(200);self.send_header('Content-Type','image/png' if name.endswith('png') else 'text/html; charset=utf-8' if name.endswith('html') else ('text/javascript; charset=utf-8' if name.endswith('js') else 'text/css'));self.send_header('X-Content-Type-Options','nosniff');self.end_headers();self.wfile.write(b);return
   try:

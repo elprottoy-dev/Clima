@@ -1,0 +1,11 @@
+const assert=require('node:assert/strict');
+const {pie,summarize}=require('./public/dashboard-insights.js');
+const d=summarize([{status:'submitted'},{status:'closed'},{status:'submitted'}],{requests:[{status:'open'},{status:'answered'}]},[{is_read:0},{is_read:1},{is_read:0}]);
+assert.equal(d[0].rows.reduce((n,r)=>n+r.value,0),3);
+assert.equal(d[0].rows.find(r=>r.label==='জমা হয়েছে').value,2);
+assert.deepEqual(d[1].rows.map(r=>r.value),[1,1]);
+assert.deepEqual(d[2].rows.map(r=>r.value),[1,2]);
+const html=pie(d[0].title,d[0].rows,'রিপোর্ট');assert.ok(html.includes('৬৬.৭'));assert.ok(html.includes('৩৩.৩'));assert.ok(html.includes('মোট ৩'));assert.ok(!html.includes('NaN'));
+assert.ok(!pie('খালি',[],'দিন').includes('<svg'));assert.ok(pie('খালি',[],'দিন').includes('এখনও কোনো তথ্য নেই'));
+assert.ok(!pie('<script>',[{label:'<img>',value:1}],'দিন').includes('<script>'));
+console.log('Chart totals, Bengali labels, zero-data and escaping checks passed.');
